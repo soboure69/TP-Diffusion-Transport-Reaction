@@ -16,6 +16,7 @@ src/
   ├── feasmbl2.m          # Assemblage matrice/vecteur système (fourni)
   ├── feeldof1.m           # Connectivité dofs par élément 1D (fourni)
   ├── fef1l.m              # Vecteur charge pour f=1, élément linéaire (fourni)
+  ├── fef1l_x.m            # Vecteur charge pour f(x)=x, élément linéaire (fourni)
   ├── feode2l.m            # Matrice élémentaire Galerkin (fourni)
   ├── feaplyc2.m           # Application conditions de Dirichlet (fourni)
   ├── Diff_Trans_Reac1D.m  # Script pilote d'origine fourni (template, verbatim)

@@ -5,10 +5,8 @@
 %  Forme du template fourni :  a u'' + b u' + c u = f
 %  Ici : a=acoef=-1, b=bcoef=0, c=ccoef=1, f(x)=x  =>  -u'' + u = x
 %
-%  Remarque : f(x)=x n'est PAS constante, donc fef1l (qui ne fait que f=1)
-%  ne convient pas. On assemble le vecteur charge elementaire a la main par
-%  quadrature de Gauss a 2 points (exacte ici). L'assemblage de la matrice
-%  et les conditions aux limites utilisent les routines fournies.
+%  Remarque : f(x)=x n'est PAS constante, donc on utilise la routine fournie
+%  fef1l_x (vecteur charge exact pour f(x)=x) au lieu de fef1l (qui fait f=1).
 
 clear; close all;
 if exist('OCTAVE_VERSION','builtin'), graphics_toolkit('fltk'); warning('off','all'); end
@@ -36,7 +34,6 @@ end
 acoef = -1;   % a (= -mu)
 bcoef =  0;   % b
 ccoef =  1;   % c (= sigma)
-ffun  = @(x) x;   % second membre f(x)=x
 
 %--- conditions aux limites ---
 bcdof(1) = 1;     bcval(1) = 0;     % u(0) = 0
@@ -46,10 +43,6 @@ bcdof(2) = nnode; bcval(2) = 1;     % u(1) = 1
 ff = zeros(sdof,1);
 kk = zeros(sdof,sdof);
 
-%--- points de Gauss a 2 points sur [-1,1] ---
-gp = [-1/sqrt(3), 1/sqrt(3)];
-gw = [1, 1];
-
 %--- assemblage ---
 for iel = 1:nel
   nl = nodes(iel,1); nr = nodes(iel,2);
@@ -57,20 +50,7 @@ for iel = 1:nel
   eleng = xr - xl;
   index = feeldof1(iel,nnel,ndof);          % ddl de l'element (fourni)
   k = feode2l(acoef,bcoef,ccoef,eleng);     % matrice elementaire (fourni)
-
-  % vecteur charge elementaire pour f(x) quelconque (Gauss 2 pts, exact ici)
-  f = [0; 0];
-  for g = 1:2
-    xi  = gp(g);
-    N1  = 0.5*(1-xi);
-    N2  = 0.5*(1+xi);
-    xg  = N1*xl + N2*xr;
-    jac = eleng/2;
-    fx  = ffun(xg);
-    f(1) = f(1) + gw(g)*fx*N1*jac;
-    f(2) = f(2) + gw(g)*fx*N2*jac;
-  end
-
+  f = fef1l_x(xl,xr);                        % vecteur charge f(x)=x (fourni)
   [kk,ff] = feasmbl2(kk,ff,k,f,index);      % assemblage (fourni)
 end
 
