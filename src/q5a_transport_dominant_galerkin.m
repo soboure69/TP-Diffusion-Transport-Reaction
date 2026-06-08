@@ -1,15 +1,22 @@
-%% Q5a - Transport dominant (sigma=0, b>>mu): standard Galerkin
-%  -mu u'' + b u' = 0, u(0)=0, u(1)=1
-%  Exact: u(x) = (exp(b/mu * x) - 1)/(exp(b/mu) - 1)
-%  b=1, mu=0.01, n=10,40,60
+%% Q5a - Transport dominant (sigma=0, b>>mu) : Galerkin standard
+%  -mu u'' + b u' = 0, u(0)=0, u(1)=1   avec  mu=0.01, b=1
+%  Mise en application DIRECTE des routines fournies (sans solve_dtr).
+%
+%  Forme du template fourni :  a u'' + b u' + c u = f
+%  Ici : a=acoef=-mu=-0.01, b=bcoef=1, c=ccoef=0, f=0.
+%  But : montrer les oscillations de Galerkin quand Pe_h = b*h/(2*mu) > 1.
 
 clear; close all;
+if exist('OCTAVE_VERSION','builtin'), graphics_toolkit('fltk'); warning('off','all'); end
 
+%--- donnees physiques ---
 mu = 0.01; b_coef = 1; sigma = 0;
-fhandle = @(x) 0;
+acoef = -mu;  bcoef = b_coef;  ccoef = sigma;   % coefficients du template
+
+nnel = 2; ndof = 1;
 n_values = [10, 40, 60];
 
-% exact solution
+%--- solution exacte (analytique) en reference ---
 x_exact = linspace(0,1,500)';
 alpha = b_coef/mu;
 u_exact = (exp(alpha*x_exact) - 1) / (exp(alpha) - 1);
@@ -20,13 +27,37 @@ colors = {'r', 'b', 'g'};
 markers = {'o', 's', 'd'};
 
 for i = 1:length(n_values)
-  n = n_values(i);
-  [xnodes, uh] = solve_dtr(mu, b_coef, sigma, n, fhandle, 'galerkin');
-  plot(xnodes, uh, [colors{i} markers{i} '-'], 'MarkerSize', 4, 'LineWidth', 1);
-  h = 1/n;
-  Pe = b_coef*h/(2*mu);
+  nel = n_values(i);
+  nnode = nel + 1;  sdof = nnode*ndof;
+  hh = 1/nel;
+
+  %--- coordonnees et connectivite ---
+  gcoord = zeros(nnode,1);
+  for k1 = 1:nnode, gcoord(k1) = (k1-1)*hh; end
+  nodes = zeros(nel,2);
+  for iel = 1:nel, nodes(iel,1)=iel; nodes(iel,2)=iel+1; end
+
+  %--- conditions aux limites ---
+  bcdof = [1, nnode];  bcval = [0, 1];   % u(0)=0, u(1)=1
+
+  %--- assemblage avec les routines fournies (f=0) ---
+  ff = zeros(sdof,1);
+  kk = zeros(sdof,sdof);
+  for iel = 1:nel
+    xl = gcoord(nodes(iel,1));  xr = gcoord(nodes(iel,2));
+    eleng = xr - xl;
+    index = feeldof1(iel,nnel,ndof);          % fourni
+    ke = feode2l(acoef,bcoef,ccoef,eleng);    % fourni
+    fe = [0; 0];                              % f = 0
+    [kk,ff] = feasmbl2(kk,ff,ke,fe,index);    % fourni
+  end
+  [kk,ff] = feaplyc2(kk,ff,bcdof,bcval);      % fourni
+  uh = kk \ ff;
+
+  plot(gcoord, uh, [colors{i} markers{i} '-'], 'MarkerSize', 4, 'LineWidth', 1);
+  Pe = b_coef*hh/(2*mu);
   fprintf('n=%d, h=%.4f, Pe_h=%.2f, max(uh)=%.4f, min(uh)=%.4f\n', ...
-          n, h, Pe, max(uh), min(uh));
+          nel, hh, Pe, max(uh), min(uh));
 end
 
 xlabel('x'); ylabel('u(x)');
