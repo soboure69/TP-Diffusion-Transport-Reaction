@@ -18,6 +18,7 @@ src/
   ├── fef1l.m              # Vecteur charge pour f=1, élément linéaire (fourni)
   ├── feode2l.m            # Matrice élémentaire Galerkin (fourni)
   ├── feaplyc2.m           # Application conditions de Dirichlet (fourni)
+  ├── Diff_Trans_Reac1D.m  # Script pilote d'origine fourni (template, verbatim)
   ├── fef_load.m           # Vecteur charge pour f(x) quelconque (Gauss 2 pts)
   ├── compute_error.m      # Erreurs L2, H1-semi, max nodale (Gauss 3 pts)
   ├── solve_dtr.m          # Solveur EF flexible (Galerkin/lumped/upwind/SUPG/GALS)
