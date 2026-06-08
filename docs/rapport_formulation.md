@@ -139,3 +139,26 @@ La solution exacte présente des **couches limites** en $x=0$ et $x=1$ d'épaiss
 Le critère de stabilité analogue est $\sigma h^2/(6\mu) < 1$ soit $h < \sqrt{6\mu/\sigma}$.
 
 Pour $\mu = 1/6000$ et $\sigma = 1$ : $\alpha = \sqrt{6000} \approx 77.5$, couche limite d'épaisseur $\sim 1/77.5 \approx 0.013$.
+
+### Q6b — Stabilisation du cas réaction
+
+- **SUPG inactif** : la perturbation SUPG est $\tau b\,\varphi_i'$ ; pour $b=0$ elle est nulle, donc **SUPG ≡ Galerkin**.
+- **Mass-lumping** (remède adapté) : remplacer la matrice de masse consistante $\frac{\sigma h}{6}\begin{pmatrix}2&1\\1&2\end{pmatrix}$ par sa version diagonale (somme des lignes) $\frac{\sigma h}{2}I$. Cela revient à **ajouter** $\frac{\sigma h}{6}\begin{pmatrix}1&-1\\-1&1\end{pmatrix}$, c.-à-d. une diffusion artificielle $\sigma h^2/6$. La solution devient **monotone** (pas d'oscillations, $u_h \ge 0$).
+- **GALS** avec $\tau = \left(\frac{4\mu}{h^2} + \frac{2|b|}{h} + \sigma\right)^{-1}$ (Codina) **n'élimine pas** les oscillations en régime réaction-dominant : le terme ajouté $\tau \sigma^2 \int \varphi_i \varphi_j$ est une masse **positive**. Le mass-lumping reste le bon outil ici.
+
+---
+
+## Étude de convergence (Q5d, Q6c)
+
+Erreurs calculées par quadrature de Gauss 3 points contre la solution exacte :
+
+$$\|e\|_{L^2} = \left(\int_0^1 (u - u_h)^2\,dx\right)^{1/2}, \qquad e_{\max} = \max_i |u(x_i) - u_h(x_i)|$$
+
+| Cas | Méthode | Ordre $L^2$ observé | $e_{\max}$ |
+|-----|---------|:---:|---|
+| Transport (Q5d) | Galerkin | → 2.0 (après $\text{Pe}_h<1$) | $O(h^2)$ |
+| Transport (Q5d) | Upwind optimal / SUPG | → 2.0 | **$\sim 10^{-15}$** (nodalement exact) |
+| Réaction (Q6c) | Galerkin | → 2.0 | $O(h^2)$ |
+| Réaction (Q6c) | Galerkin + mass-lumping | → 2.0 | $O(h^2)$, monotone |
+
+Conclusion : tous les schémas P1 convergent en $O(h^2)$ en norme $L^2$ une fois les couches limites résolues. Les méthodes upwind-optimal / SUPG sont **nodalement exactes** en 1D à coefficients constants ; le mass-lumping garantit une solution sans oscillations dès les maillages grossiers.

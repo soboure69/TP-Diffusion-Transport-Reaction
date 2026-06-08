@@ -27,4 +27,13 @@ q5c_gals_vs_upwind;
 fprintf('\n--- Q6a: Reaction dominant ---\n');
 q6a_reaction_dominant;
 
+fprintf('\n--- Q6b: Reaction dominant - methodes stabilisees ---\n');
+q6b_reaction_stabilized;
+
+fprintf('\n--- Q5d: Convergence (transport) ---\n');
+q5d_convergence;
+
+fprintf('\n--- Q6c: Convergence (reaction) ---\n');
+q6c_convergence;
+
 fprintf('\n====== Toutes les figures sont dans ../figures/ ======\n');
